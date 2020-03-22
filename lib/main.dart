@@ -1,35 +1,53 @@
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart';
+typedef void OnError(Exception exception);
 
-void main() => runApp(MyApp());
+void main() {
+  runApp(new MaterialApp(debugShowCheckedModeBanner: false,home:  LocalAudio()));
+}
 
-class MyApp extends StatelessWidget {
+class LocalAudio extends StatefulWidget {
+  @override
+  _LocalAudio createState() =>  _LocalAudio();
+}
+
+class _LocalAudio extends State<LocalAudio> {
+  Duration _duration = new Duration();
+  Duration _position = new Duration();
+  AudioPlayer advancedPlayer;
+  AudioCache audioCache;
+
+  @override
+  void initState() {
+    super.initState();
+    initPlayer();
+  }
+
+  void initPlayer() {
+    advancedPlayer = new AudioPlayer();
+    audioCache = new AudioCache(fixedPlayer: advancedPlayer);
+
+    advancedPlayer.durationHandler = (d) => setState(() {
+          _duration = d;
+        });
+
+    advancedPlayer.positionHandler = (p) => setState(() {
+          _position = p;
+        });
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MyHomePage(),
+    return DefaultTabController(
+      length: 1,
+      child: Scaffold(
+          body: GestureDetector(
+            child: FlareActor("assets/idiot.flr", alignment:Alignment.center, fit:BoxFit.cover, animation:"Main"),
+            onTap: () => audioCache.play('music.mp3'),
+          ),
+      ),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => new _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  AudioPlayer audioPlayer = AudioPlayer();
-  
-    _playLocal() async {
-    int result = await audioPlayer.play('assets/music.mp3', isLocal: true);
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed: ()=> _playLocal),
-      body: new FlareActor("assets/idiot.flr", alignment:Alignment.center, fit:BoxFit.cover, animation:"Main"));
   }
 }
